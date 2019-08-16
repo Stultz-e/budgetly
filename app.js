@@ -13,10 +13,6 @@ var budgetController = (function() {
         this.value = value;
     };
 
-    var allExpenses = [];
-    var allIncomes = [];
-    var totalExpenses = 0;
-
     var data = {
         allItems: {
             exp: [],
@@ -30,17 +26,39 @@ var budgetController = (function() {
 
     return {
         addItem: function(type, des, val) {         
-           var newItem; 
+           var newItem, ID; 
 
-           if(type === 'exp') {
+            //[1 2 3 4 5], next ID = 6
+            //[1 2 4 6 8], next ID = 9
+            // ID = last ID + 1
+
+        // Create new ID
+        if (data.allItems[type].length > 0) {
+            ID = data.allItems[type][data.allItems[type].length - 1].id + 1;
+        } else {
+            ID = 0;
+        }
+      
+        // Create new item based on 'inc' or 'exp' type
+        if (type === 'exp') {
             newItem = new Expense(ID, des, val);
-           } else if (type === 'inc') {
+        } else if (type === 'inc') {
             newItem = new Income(ID, des, val);
-           }         
+        }
+
+           //push it into our data structure 
+           data.allItems[type].push(newItem);
+
+           // Return the new element
+           return newItem;
+        },
+        
+        testing: function() {
+            console.log(data);
         }
     };
 
-})(); 
+})();
 
 
 // UI CONTROLLER
@@ -56,7 +74,7 @@ var UIController = (function() {
     return {
         getInput: function() {
             return {
-                type: document.querySelector(DOMstrings.inputType).value, // Will be either inc or exp
+                type: document.querySelector(DOMstrings.inputType).value, // Will be either income or expense
                 description: document.querySelector(DOMstrings.inputDescription).value,
                 value: document.querySelector(DOMstrings.inputValue).value
             };
@@ -65,6 +83,7 @@ var UIController = (function() {
             return DOMstrings;
         }
     };
+
 })();
 
 // GLOBAL APP CONTROLLER
@@ -79,29 +98,32 @@ var controller = (function(budgetCtrl, UICtrl) {
                 ctrlAddItem();
             }
         });
-    }
+    };
 
 
     var ctrlAddItem = function() {
+        var input, newItem;
+
         // 1. Get the field input data 
-        var input = UICtrl.getInput();
+        input = UICtrl.getInput();
 
         // 2. Add the item to the budget controller
+        newItem = budgetCtrl.addItem(input.type, input.description, input.value);
 
         // 3. Add the item to the UI 
 
         // 4. Calculate the budget 
 
         // 5. Display the budget on the UI    
-    }
+    };
 
     return {
         init: function() {
-            console.log('sah dude');
+            console.log('The application has started');
             setupEventListeners();
         }
     };
 
-}) (budgetController, UIController);
+})(budgetController, UIController);
 
 controller.init();
